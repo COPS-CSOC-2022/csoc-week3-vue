@@ -3,7 +3,7 @@
     <add-task @newTask="getTasks" />
 
     <div id="searchTaskBar">
-      <aside class="mx-auto flex justify-between mt-2 px-4">
+      <aside class="flex justify-between mt-2 px-4">
         <label for="search task" class="flex-1">
           <input
             type="text"
@@ -22,12 +22,70 @@
               outline-none
               focus:outline-none focus:ring
               w-full
+              pr-3
+              mr-3
             "
             placeholder="Filter tasks"
           />
         </label>
+        <button
+          type="button"
+          class="
+            px-4
+            py-2
+            bg-transparent
+            hover:bg-yellow-500
+            text-yellow-600 text-sm
+            hover:text-white
+            border border-yellow-500
+            hover:border-transparent
+            rounded
+          "
+          @click="searchTodo = ''"
+        >
+          Clear Filter
+        </button>
       </aside>
     </div>
+
+    <aside class="flex justify-between mt-2 px-4 pt-2">
+      <button
+        type="button"
+        class="
+          w-1/2
+          px-4
+          py-2
+          bg-transparent
+          hover:bg-yellow-500
+          text-yellow-600 text-sm
+          hover:text-white
+          border border-yellow-500
+          hover:border-transparent
+          rounded
+        "
+        @click="sortAsc"
+      >
+        Sort (A-Z)
+      </button>
+      <button
+        type="button"
+        class="
+          w-1/2
+          px-4
+          py-2
+          bg-transparent
+          hover:bg-yellow-500
+          text-yellow-600 text-sm
+          hover:text-white
+          border border-yellow-500
+          hover:border-transparent
+          rounded
+        "
+        @click="sortDesc"
+      >
+        Sort (Z-A)
+      </button>
+    </aside>
 
     <transition>
       <div v-if="loading">
@@ -181,7 +239,7 @@ export default defineComponent({
 
   data() {
     return {
-      searchTodo : '',
+      searchTodo: '',
       todos: [],
       loading: false,
     }
@@ -190,8 +248,8 @@ export default defineComponent({
   computed: {
     filteredTodos() {
       let filter = new RegExp(this.searchTodo, 'i')
-      return this.todos.filter(el => el.title.match(filter))
-    }
+      return this.todos.filter((el) => el.title.match(filter))
+    },
   },
 
   mounted() {
@@ -286,6 +344,15 @@ export default defineComponent({
         .catch(() =>
           this.$toast.error('Deletion failed. Please try again later.')
         )
+    },
+
+    sortAsc() {
+      this.todos.sort((a, b) => (a.title > b.title ? 1 : -1))
+      this.$toast.success('Sorted in ascending order...')
+    },
+    sortDesc() {
+      this.todos.sort((a, b) => (a.title < b.title ? 1 : -1))
+      this.$toast.success('Sorted in descending order...')
     },
   },
 })
