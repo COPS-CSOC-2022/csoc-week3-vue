@@ -1,91 +1,9 @@
 <template>
   <main class="max-w-lg mx-auto px-6">
+
     <add-task @newTask="getTasks" />
-
-    <div id="searchTaskBar">
-      <aside class="flex justify-between mt-2 px-4">
-        <label for="search task" class="flex-1">
-          <input
-            type="text"
-            name="search task"
-            v-model.trim="searchTodo"
-            class="
-              todo-search-task-input
-              px-4
-              py-2
-              placeholder-yellowGray-300
-              text-yellowGray-600
-              bg-white
-              rounded
-              text-sm
-              border border-yellowGray-300
-              outline-none
-              focus:outline-none focus:ring
-              w-full
-              pr-3
-              mr-3
-            "
-            placeholder="Filter tasks"
-          />
-        </label>
-        <button
-          type="button"
-          class="
-            px-4
-            py-2
-            bg-transparent
-            hover:bg-yellow-500
-            text-yellow-600 text-sm
-            hover:text-white
-            border border-yellow-500
-            hover:border-transparent
-            rounded
-          "
-          @click="searchTodo = ''"
-        >
-          Clear Filter
-        </button>
-      </aside>
-    </div>
-
-    <aside class="flex justify-between mt-2 px-4 pt-2">
-      <button
-        type="button"
-        class="
-          w-1/2
-          px-4
-          py-2
-          bg-transparent
-          hover:bg-yellow-500
-          text-yellow-600 text-sm
-          hover:text-white
-          border border-yellow-500
-          hover:border-transparent
-          rounded
-        "
-        @click="sortAsc"
-      >
-        Sort (A-Z)
-      </button>
-      <button
-        type="button"
-        class="
-          w-1/2
-          px-4
-          py-2
-          bg-transparent
-          hover:bg-yellow-500
-          text-yellow-600 text-sm
-          hover:text-white
-          border border-yellow-500
-          hover:border-transparent
-          rounded
-        "
-        @click="sortDesc"
-      >
-        Sort (Z-A)
-      </button>
-    </aside>
+    <search-bar @updateFilter="updateFilter"/>
+    <sort-bar @sortAsc="sortAsc" @sortDesc="sortDesc"/>
 
     <transition>
       <div v-if="loading">
@@ -232,14 +150,16 @@
 <script lang>
 import { defineComponent } from '@nuxtjs/composition-api'
 import addTask from '~/components/addTask.vue'
+import searchBar from '~/components/searchBar.vue'
+import sortBar from '~/components/sortBar.vue'
 
 export default defineComponent({
   middleware: 'auth',
-  components: { addTask },
+  components: { addTask, searchBar, sortBar },
 
   data() {
     return {
-      searchTodo: '',
+      searchTodo : '',
       todos: [],
       loading: false,
     }
@@ -354,6 +274,10 @@ export default defineComponent({
       this.todos.sort((a, b) => (a.title < b.title ? 1 : -1))
       this.$toast.success('Sorted in descending order...')
     },
+
+    updateFilter(e) {
+      this.searchTodo = e
+    }
   },
 })
 </script>
