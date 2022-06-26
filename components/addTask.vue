@@ -16,7 +16,8 @@
           text-sm
           border border-blueGray-300
           outline-none
-          focus:outline-none focus:ring
+          focus:outline-none
+          focus:ring
           w-full
         "
         placeholder="Enter your task here"

@@ -1,5 +1,5 @@
 <template>
-  <aside class="flex justify-between mt-2 px-4 pt-2">
+  <aside class="mx-auto flex justify-between mt-2 px-4">
     <button
       type="button"
       class="

@@ -104,7 +104,8 @@
               type="button"
               class="
                 bg-transparent
-                hover:bg-yellow-500 hover:text-white
+                hover:bg-yellow-500 
+                hover:text-white
                 border border-yellow-500
                 hover:border-transparent
                 rounded
@@ -124,7 +125,8 @@
               type="button"
               class="
                 bg-transparent
-                hover:bg-red-500 hover:text-white
+                hover:bg-red-500 
+                hover:text-white
                 border border-red-500
                 hover:border-transparent
                 rounded

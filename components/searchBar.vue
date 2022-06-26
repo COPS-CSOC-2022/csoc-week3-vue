@@ -1,5 +1,5 @@
 <template>
-  <aside class="flex justify-between mt-2 px-4">
+  <aside class="mx-auto flex justify-between mt-2 px-4">
     <label for="search task" class="flex-1">
       <input
         type="text"
@@ -31,10 +31,10 @@
         px-4
         py-2
         bg-transparent
-        hover:bg-yellow-500
-        text-yellow-600 text-sm
+        hover:bg-blue-500
+        text-blue-700 text-sm
         hover:text-white
-        border border-yellow-500
+        border border-blue-500
         hover:border-transparent
         rounded
       "
