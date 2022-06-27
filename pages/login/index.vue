@@ -53,7 +53,8 @@ export default defineComponent({
   setup() {
     const { $toast } = useContext()
     function login() {
-      $toast.info('Complete Me!')
+      $toast.info('Complte Me!')
+      
       /***
        * @todo Complete this function.
        * @todo 1. Write code for form validation.
@@ -61,6 +62,8 @@ export default defineComponent({
        * @todo 3. Commit token to Vuex Store
        * @hints checkout register/index.vue
        */
+
+
     }
 
     return {
