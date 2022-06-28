@@ -9,6 +9,9 @@
           <li class="font-semibold text-white">
             <nuxt-link to="/">Tasks</nuxt-link>
           </li>
+          <li>
+
+          </li>
         </ul>
         <ul v-else class="flex">
           <li class="text-white mr-2">
@@ -19,6 +22,7 @@
           </li>
         </ul>
       </transition>
+      <div v-if="auth"><h2 class="font-bold text-white text-xl">Welcome  {{name}}</h2></div>
       <div v-if="auth" class="w-28 inline-block relative">
         <div class="group inline-block relative">
           <a
@@ -32,6 +36,7 @@
               hover:bg-gray-400
             "
             href="#"
+            id="idol"
             @click="logout"
           >
             Logout
@@ -46,16 +51,32 @@
 import { defineComponent } from '@nuxtjs/composition-api'
 
 export default defineComponent({
+  // data(){return{
+  //   username:""
+  // }},
   computed: {
     auth() {
       return this.$store.getters.auth
     },
+       name: function(){
+      return this.$store.getters.name
+    },
   },
+ 
   methods: {
     logout() {
       this.$store.commit('setToken', null)
       this.$router.replace('/login')
+      this.$toast.success('Logged out!...')
     },
   },
 })
 </script>
+
+<style>
+#idol{
+  color: white;
+  /* border: 10px red solid; */
+  background-color: black;
+}
+</style>

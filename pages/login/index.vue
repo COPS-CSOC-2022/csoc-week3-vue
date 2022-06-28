@@ -5,6 +5,7 @@
       <label for="inputUsername">
         <input
           id="inputUsername"
+          v-model.trim="username"
           type="text"
           class="block border border-grey-light w-full p-3 rounded mb-4"
           name="inputUsername"
@@ -15,6 +16,7 @@
       <label for="password">
         <input
           id="inputPassword"
+          v-model.trim="password"
           type="password"
           class="block border border-grey-light w-full p-3 rounded mb-4"
           name="inputPassword"
@@ -47,26 +49,58 @@
 
 <script>
 import { useContext } from '@nuxtjs/composition-api'
-import { defineComponent } from '@vue/composition-api'
+// import { defineComponent } from '@vue/composition-api'
+
+import {
+  defineComponent,
+  reactive,
+  toRefs,
+} from '@vue/composition-api'
 
 export default defineComponent({
+        middleware: 'auth',
+
   setup() {
-    const { $toast } = useContext()
-    function login() {
-      $toast.info('Complte Me!')
-      
-      /***
-       * @todo Complete this function.
-       * @todo 1. Write code for form validation.
-       * @todo 2. Fetch the auth token from backend and login the user.
-       * @todo 3. Commit token to Vuex Store
-       * @hints checkout register/index.vue
-       */
+    const state = reactive({
+      username: '',
+      password: '',
+    })
 
+    const { redirect, $axios, store, $toast } = useContext()
+    // const { $toast } = useContext()
 
+    const validateField = () => {
+      if (state.username === '' || state.password === '') {
+        $toast.error('Username and password cannot be empty.')
+        return false
+      }
+      return true
     }
 
+    function login() {
+      if (!validateField()) return
+
+      const data = {
+        username: state.username,
+        password: state.password,
+      }
+      $toast.info('Please wait...')
+
+          $axios
+        .$post('auth/login/', data)
+        .then(({ token }) => {
+          store.commit('setToken', token)
+          redirect('/')
+          $toast.success('Login Done.')
+        })
+        .catch(() => {
+          $toast.error(
+            'Username or password wrong.'
+          )
+        })
+    }
     return {
+      ...toRefs(state),
       login,
     }
   },
