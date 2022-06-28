@@ -2,7 +2,7 @@
   <main class="max-w-lg mx-auto px-6">
     <add-task @newTask="getTasks" />
     <transition>
-      <span v-if="loading">Fetching Tasks....</span>
+      <span v-if="loading"></span>
       <ul v-else class="flex-col mt-9 mx-auto">
         <li
           v-for="(todo, index) in todos"
@@ -22,9 +22,11 @@
           <label :for="todo.id">
             <input
               :id="todo.id"
+              v-show="todo.editing"
+              v-model="todo.title"
               type="text"
               :class="[
-                'hideme appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring todo-edit-task-input',
+                'appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring todo-edit-task-input',
               ]"
               :name="todo.title"
               placeholder="Edit The Task"
@@ -32,8 +34,9 @@
           </label>
           <div class="">
             <button
+              v-show="todo.editing"
               class="
-                hideme
+
                 bg-transparent
                 hover:bg-gray-500
                 text-gray-700 text-sm
@@ -51,11 +54,12 @@
               Done
             </button>
           </div>
-          <div :class="['todo-task text-gray-600']">
+          <div v-show="!todo.editing" :class="['todo-task text-gray-600']">
             {{ todo.title }}
           </div>
           <span class="">
             <button
+              v-show="!todo.editing"
               style="margin-right: 5px"
               type="button"
               class="
@@ -77,9 +81,10 @@
               />
             </button>
             <button
+              v-show="!todo.editing"
               type="button"
               class="
-                bg-transparent
+                bg-green
                 hover:bg-red-500 hover:text-white
                 border border-red-500
                 hover:border-transparent
@@ -109,63 +114,87 @@ import addTask from '~/components/addTask.vue'
 
 export default defineComponent({
   components: { addTask },
+  middleware: 'auth',
   data() {
     return {
       hello: 'hello world!',
-      todos: [
-        {
-          title: 'Henlo',
-          id: 1,
-          editing: false,
-        },
-        {
-          title: 'Frens',
-          id: 2,
-          editing: false,
-        },
-      ],
+      todos: [],
+
       loading: false,
     }
   },
   mounted() {
+    this.loading= true
     this.getTasks()
+    this.$toast.info('Fetching your Tasks...')
   },
   methods: {
     async getTasks() {
-      /***
-       * @todo Fetch the tasks created by the user and display them.
-       * @todo also the function to display a single new task added
-       * @hints use store and set loading true
-       * @caution you have to assign new value to todos for it to update
-       */
+    this.$axios({
+      headers: {
+        Authorization: 'Token ' + this.$store.getters.token,
+      },
+      url: 'todo/',
+      method: 'get',
+    })
+      .then(({ data }) => {
+        this.loading = false
+        this.todos = data.map((todo) => {
+          return {
+            ...todo,
+            editing: false,
+          }
+        })
+      })
+      .catch(() => {
+        this.$toast.error('Error in fetching the tasks')
+      })
     },
-    /**
-     * Function to update a single todo
-     * @argument {number} _index - index of element to update in todos array
-     * @argument {number} _id - id of todo obtained from API
-     * @todo Complete this function.
-     * @todo 1. Send the request to update the task to the backend server.
-     * @todo 2. Update the task in the dom.
-     */
-    updateTask(_index, _id) {},
-    /**
-     * toggle visibility of input and buttons for a single todo
-     * @argument {number} index - index of element to toggle
-     * @todo add in bindings in dom so that 'hideme' class is dynamic or use conditional rendering
-     * @hint read about class bindings in vue
-     */
+
+    updateTask(_index, _id) {
+    if (this.todos[_index].title === '') {
+       this.$toast.error('Task cannot be empty!!')
+     } else {
+       this.$axios({
+         headers: {
+           Authorization: 'Token ' + this.$store.getters.token,
+         },
+         url: 'todo/' + _id + '/',
+         method: 'patch',
+         data: {
+           title: this.todos[_index].title,
+         },
+       })
+         .then(() => {
+           this.todos[_index].editing = false
+           this.$toast.success('Task updated successfully')
+         })
+         .catch(() => {
+           this.$toast.error('Error in updating the tasks')
+         })
+     }
+    },
+
     editTask(index) {
       this.todos[index].editing = !this.todos[index].editing
     },
-    /**
-     * Function to delete a single todo
-     * @argument {number} _index - index of element to update in todos array
-     * @argument {number} _id - id of todo obtained from API
-     * @todo Complete this function.
-     * @todo 1. Send the request to delete the task to the backend server.
-     * @todo 2. Remove the task from the dom.
-     */
-    deleteTask(_index, _id) {},
+
+    deleteTask(_index, _id) {
+    this.$axios({
+        headers: {
+          Authorization: 'Token ' + this.$store.getters.token,
+        },
+        url: 'todo/' + _id + '/',
+        method: 'delete',
+      })
+        .then(() => {
+          this.$toast.success('Task deleted successfully')
+          this.todos = this.todos.filter((todo) => todo.id !== _id)
+        })
+        .catch(() => {
+          this.$toast.error('Error Occured.Please try again later')
+        })
+    },
   },
 })
 </script>
