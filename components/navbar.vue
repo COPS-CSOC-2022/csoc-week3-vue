@@ -1,21 +1,39 @@
 <template>
-  <nav class="bg-blue-600">
+  <nav class="bg-yellow-600">
     <ul class="flex p-5 items-center justify-between">
       <transition>
         <ul v-if="auth" class="flex space-x-4 items-center justify-between">
           <li>
             <h1 class="font-bold text-white text-xl">Todo</h1>
           </li>
-          <li class="font-semibold text-white">
-            <nuxt-link to="/">Tasks</nuxt-link>
+          <li class=" text-black">
+            <nuxt-link to="/"><h1 class="rounded-b
+            bg-white
+            py-2
+            px-4
+            block
+            whitespace-no-wrap
+            hover:bg-gray-400">Tasks</h1></nuxt-link>
           </li>
         </ul>
         <ul v-else class="flex">
-          <li class="text-white mr-2">
-            <nuxt-link to="/login">Login</nuxt-link>
+          <li class="text-black mr-10">
+            <nuxt-link to="/login"><h1 class="rounded-b
+            bg-white
+            py-2
+            px-4
+            block
+            whitespace-no-wrap
+            hover:bg-gray-400">Login</h1></nuxt-link>
           </li>
-          <li class="text-white">
-            <nuxt-link to="/register">Register</nuxt-link>
+          <li class="text-black">
+            <nuxt-link to="/register"><h1 class="rounded-b
+            bg-white
+            py-2
+            px-4
+            block
+            whitespace-no-wrap
+            hover:bg-gray-400">Register</h1></nuxt-link>
           </li>
         </ul>
       </transition>
@@ -24,7 +42,7 @@
           <a
             class="
               rounded-b
-              bg-gray-200
+              bg-white
               py-2
               px-4
               block
@@ -55,6 +73,7 @@ export default defineComponent({
     logout() {
       this.$store.commit('setToken', null)
       this.$router.replace('/login')
+      this.$toast.info('Logged out successfully!')
     },
   },
 })
