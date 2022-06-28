@@ -65,7 +65,7 @@
           rounded
           bg-transparent
           text-green-500
-          hover:text-white hover:bg-green-500
+          hover:text-green hover:bg-green-500
           border border-green-500
           hover:border-transparent
           focus:outline-none
@@ -88,6 +88,7 @@ import {
 } from '@nuxtjs/composition-api'
 
 export default defineComponent({
+  middleware: 'auth',
   setup() {
     const state = reactive({
       firstName: '',
@@ -133,6 +134,8 @@ export default defineComponent({
         .$post('auth/register/', data)
         .then(({ token }) => {
           store.commit('setToken', token)
+          $toast.success("Registration Successful!")
+          $toast.info("You have been logged in!")
           redirect('/')
         })
         .catch(() => {
