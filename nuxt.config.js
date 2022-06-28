@@ -93,9 +93,7 @@ export default {
     position: 'bottom-right',
     duration: 2000,
   },
-   generate: {
-    dir: 'public'
-  },
+   
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
