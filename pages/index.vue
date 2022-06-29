@@ -1,7 +1,7 @@
 <template>
   <main class="max-w-lg mx-auto px-8">
     <add-task @newTask="getTasks" />
-    <transition name="fade">
+    <transition>
       <span v-if="loading">Fetching Tasks....</span>
       <ul v-else class="flex-col mt-9 mx-auto">
         <li
