@@ -79,7 +79,7 @@
   </main>
 </template>
 
-<script lang="ts">
+<script>
 import {
   defineComponent,
   reactive,
@@ -88,6 +88,7 @@ import {
 } from '@nuxtjs/composition-api'
 
 export default defineComponent({
+  middleware: 'auth',
   setup() {
     const state = reactive({
       firstName: '',
@@ -97,7 +98,7 @@ export default defineComponent({
       password: '',
     })
 
-    const { redirect, $axios, store, $toast } = useContext()
+    const { $toast, $axios, store, redirect, route } = useContext()
 
     const validateField = () => {
       if (
@@ -133,7 +134,7 @@ export default defineComponent({
         .$post('auth/register/', data)
         .then(({ token }) => {
           store.commit('setToken', token)
-          redirect('/')
+          if (route.path !== '/') redirect('/')
         })
         .catch(() => {
           $toast.error(
