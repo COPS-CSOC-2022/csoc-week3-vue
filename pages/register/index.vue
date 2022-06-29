@@ -88,6 +88,7 @@ import {
 } from '@nuxtjs/composition-api'
 
 export default defineComponent({
+    middleware: 'auth',
   setup() {
     const state = reactive({
       firstName: '',
