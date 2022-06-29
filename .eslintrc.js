@@ -20,6 +20,12 @@ module.exports = {
     'vue/html-self-closing': 0,
     'vue/html-closing-bracket-newline': 0,
   },
+  'prettier/prettier': [
+    'error',
+    {
+      endOfLine: 'auto',
+    },
+  ],
   parserOptions: {
     parser: '@typescript-eslint/parser',
   },
