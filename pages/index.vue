@@ -28,7 +28,7 @@
               ]"
               :name="todo.title"
               placeholder="Edit The Task"
-              v-model="editTitle"
+              v-model.trim="editTitle"
               v-show="!todos[index].editing"
             />
           </label>
