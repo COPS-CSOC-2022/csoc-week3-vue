@@ -6,11 +6,11 @@ export default defineNuxtMiddleware((context) => {
    * @todo Redirect the user to main page if token is present in store
    * @hints check what propeties context has
    */
-
+  const path = context.route.fullPath
   const token = context.store.getters.token
-  if (token == null && context.route.path !== '/login') {
-    return context.redirect('/login')
-  } else if (token != null && context.route.path !== '/') {
+  if (token == null && path === '/') {
+    return context.redirect('login/')
+  } else if (token != null && path !== '/') {
     return context.redirect('/')
   }
 })
