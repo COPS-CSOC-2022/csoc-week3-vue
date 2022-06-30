@@ -1,5 +1,5 @@
 <template>
-  <main class="max-w-lg mx-auto items-center justify-center px-2">
+  <main class="max-w-lg mx-auto items-center justify-center px-2 register">
     <div class="bg-white px-6 py-8 rounded shadow-md text-black w-full">
       <h1 class="mb-8 text-3xl text-center">Register</h1>
       <label for="inputFirstName">
@@ -70,6 +70,7 @@
           hover:border-transparent
           focus:outline-none
           my-1
+          registerButton
         "
         @click="register"
       >
@@ -149,3 +150,11 @@ export default defineComponent({
   },
 })
 </script>
+<style scoped>
+.register {
+  padding-top: 250px;
+}
+.registerButton {
+  height: 45px;
+}
+</style>
