@@ -2,6 +2,7 @@
   <aside class="mx-auto flex justify-between mt-24 px-4">
     <label for="add task" class="flex-1">
       <input
+        v-model.trim="newTask"
         type="text"
         name="add task"
         class="
@@ -34,6 +35,7 @@
         border border-green-500
         hover:border-transparent
         rounded
+        addBorder
       "
       @click="addTask"
     >
@@ -46,7 +48,11 @@
 import { defineComponent } from '@nuxtjs/composition-api'
 
 export default defineComponent({
-  emits: ['newTask'],
+  // emits: ['newTask'],
+  data() {
+    return { newTask: '' }
+  },
+
   methods: {
     addTask() {
       /**
@@ -55,7 +61,38 @@ export default defineComponent({
        * @todo 2. Add the task in the dom.
        * @hint use emit to make a event that parent can observe
        */
+
+      if (this.newTask === '') {
+        this.$toast.error('Please fill the Add task Field....')
+        return
+      }
+
+      const data = {
+        title: this.newTask,
+      }
+      const headerForApiRequets = {
+        headers: { Authorization: 'Token ' + this.$store.getters.token },
+      }
+      this.$toast.info('Please wait...')
+
+      this.$axios
+        .$post('todo/create/', data, headerForApiRequets)
+        .then(() => {
+          this.$toast.success('Task added successfully...')
+          this.newTask = ''
+          this.$emit('newTask')
+          // this.$router.go()
+        })
+        .catch(() => {
+          this.$toast.error('Task not Added Succesfully')
+        })
     },
   },
 })
 </script>
+
+<style scoped>
+.addBorder {
+  border-color: #7bf1a8;
+}
+</style>

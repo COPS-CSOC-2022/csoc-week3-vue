@@ -30,6 +30,7 @@
               block
               whitespace-no-wrap
               hover:bg-gray-400
+              logout
             "
             href="#"
             @click="logout"
@@ -55,7 +56,14 @@ export default defineComponent({
     logout() {
       this.$store.commit('setToken', null)
       this.$router.replace('/login')
+      this.$toast.success('Logged out successfully!')
     },
   },
 })
 </script>
+<style scoped>
+.logout {
+  background-color: white;
+  border-radius: 10%;
+}
+</style>
