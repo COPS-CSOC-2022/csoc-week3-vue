@@ -108,21 +108,12 @@ import { defineComponent } from '@nuxtjs/composition-api'
 import addTask from '~/components/addTask.vue'
 
 export default defineComponent({
+  middleware: 'auth',
   components: { addTask },
   data() {
     return {
       hello: 'hello world!',
       todos: [
-        {
-          title: 'Henlo',
-          id: 1,
-          editing: false,
-        },
-        {
-          title: 'Frens',
-          id: 2,
-          editing: false,
-        },
       ],
       loading: false,
     }
@@ -138,6 +129,20 @@ export default defineComponent({
        * @hints use store and set loading true
        * @caution you have to assign new value to todos for it to update
        */
+      const headers = {
+        Authorization: 'Token ' + this.$store.getters.token,
+      }
+      this.$axios({
+        headers: headers,
+        url: 'todo/',
+        method: 'get',
+      }).then((res) => {
+        this.todos = res.data
+      }).catch((err) =>
+        $toast.error(
+          "Some Error Occurred!"
+        )
+      )
     },
     /**
      * Function to update a single todo
@@ -147,7 +152,7 @@ export default defineComponent({
      * @todo 1. Send the request to update the task to the backend server.
      * @todo 2. Update the task in the dom.
      */
-    updateTask(_index, _id) {},
+    updateTask(_index, _id) { },
     /**
      * toggle visibility of input and buttons for a single todo
      * @argument {number} index - index of element to toggle
@@ -165,7 +170,24 @@ export default defineComponent({
      * @todo 1. Send the request to delete the task to the backend server.
      * @todo 2. Remove the task from the dom.
      */
-    deleteTask(_index, _id) {},
+    deleteTask(_index, _id) {
+      const headers = {
+        Authorization: 'Token ' + this.$store.getters.token,
+      }
+      this.$toast.info('Deleting....')
+      this.$axios({
+        headers: headers,
+        url: 'todo/' + _id + '/',
+        method: 'delete',
+      })
+        .then(() => {
+          this.$toast.success('Todo deleted successfully!')
+          this.$router.go()
+        })
+        .catch(() =>
+          this.$toast.error("Some error occured!"),
+        )
+    },
   },
 })
 </script>
