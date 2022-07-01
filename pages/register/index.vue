@@ -133,6 +133,7 @@ export default defineComponent({
         .$post('auth/register/', data)
         .then(({ token }) => {
           store.commit('setToken', token)
+          $toast.success('Login Success')
           redirect('/')
         })
         .catch(() => {

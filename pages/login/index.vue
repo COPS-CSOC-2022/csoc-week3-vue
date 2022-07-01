@@ -9,6 +9,7 @@
           class="block border border-grey-light w-full p-3 rounded mb-4"
           name="inputUsername"
           placeholder="Username"
+          v-model="username"
         />
       </label>
 
@@ -19,6 +20,7 @@
           class="block border border-grey-light w-full p-3 rounded mb-4"
           name="inputPassword"
           placeholder="Password"
+          v-model="password"
         />
       </label>
 
@@ -48,12 +50,20 @@
 <script>
 import { useContext } from '@nuxtjs/composition-api'
 import { defineComponent } from '@vue/composition-api'
+import axios from 'axios'
+const API_BASE_URL = 'https://todo-app-csoc.herokuapp.com/';
 
 export default defineComponent({
+  data() {
+    return {
+      username: '',
+      password: '',
+    }
+  },
   setup() {
     const { $toast } = useContext()
     function login() {
-      $toast.info('Complete Me!')
+      // $toast.info('Complete Me!')
       /***
        * @todo Complete this function.
        * @todo 1. Write code for form validation.
@@ -61,11 +71,32 @@ export default defineComponent({
        * @todo 3. Commit token to Vuex Store
        * @hints checkout register/index.vue
        */
+      if (this.username.trim() === '' || this.password.trim() === '') {
+        $toast.error('Please enter a valid Username and Password')
+        return
+      }
+
+      axios({
+        url: API_BASE_URL + 'auth/login/',
+        method: 'POST',
+        data: {
+          username: this.username,
+          password: this.password,
+        },
+      }).then(({data}) => {
+        this.$store.commit('setToken', data.token)
+        $toast.success('Login Success')
+        this.$router.replace('/')
+      }).catch( (err) => {
+        $toast.error('Incorrect Username or Password');
+        console.log(err)
+      })
     }
 
     return {
       login,
     }
   },
+  middleware: 'auth'
 })
 </script>

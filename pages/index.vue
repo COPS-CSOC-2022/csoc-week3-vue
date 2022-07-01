@@ -21,10 +21,11 @@
         >
           <label :for="todo.id">
             <input
+              v-model="todos[index].title"
               :id="todo.id"
               type="text"
               :class="[
-                'hideme appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring todo-edit-task-input',
+                {'hideme': !todos[index].editing}, 'appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring todo-edit-task-input'
               ]"
               :name="todo.title"
               placeholder="Edit The Task"
@@ -32,8 +33,8 @@
           </label>
           <div class="">
             <button
+              :class="{'hideme': !todos[index].editing}"
               class="
-                hideme
                 bg-transparent
                 hover:bg-gray-500
                 text-gray-700 text-sm
@@ -51,13 +52,14 @@
               Done
             </button>
           </div>
-          <div :class="['todo-task text-gray-600']">
+          <div :class="[{'hideme': todos[index].editing}, 'todo-task text-gray-600']">
             {{ todo.title }}
           </div>
           <span class="">
             <button
               style="margin-right: 5px"
               type="button"
+              :class="{'hideme': todos[index].editing}"
               class="
                 bg-transparent
                 hover:bg-yellow-500 hover:text-white
@@ -78,6 +80,7 @@
             </button>
             <button
               type="button"
+              :class="{'hideme': todos[index].editing}"
               class="
                 bg-transparent
                 hover:bg-red-500 hover:text-white
@@ -106,24 +109,17 @@
 <script lang>
 import { defineComponent } from '@nuxtjs/composition-api'
 import addTask from '~/components/addTask.vue'
+import axios from 'axios'
+const API_BASE_URL = 'https://todo-app-csoc.herokuapp.com/';
 
 export default defineComponent({
   components: { addTask },
   data() {
     return {
       hello: 'hello world!',
-      todos: [
-        {
-          title: 'Henlo',
-          id: 1,
-          editing: false,
-        },
-        {
-          title: 'Frens',
-          id: 2,
-          editing: false,
-        },
-      ],
+      todos: {
+        type: Array,
+      },
       loading: false,
     }
   },
@@ -138,6 +134,15 @@ export default defineComponent({
        * @hints use store and set loading true
        * @caution you have to assign new value to todos for it to update
        */
+      this.loading = true
+      let todos = await axios({
+        url: API_BASE_URL + 'todo/',
+        method: 'GET',
+        headers: {Authorization: `token ${this.$store.getters.token}`},
+      }).then(obj => obj.data)
+      todos.forEach(t => t.editing = false)
+      this.todos = todos
+      this.loading = false
     },
     /**
      * Function to update a single todo
@@ -147,7 +152,18 @@ export default defineComponent({
      * @todo 1. Send the request to update the task to the backend server.
      * @todo 2. Update the task in the dom.
      */
-    updateTask(_index, _id) {},
+    updateTask(_index, _id) {
+      this.todos[_index].title = this.todos[_index].title.trim()
+      axios({
+        url: API_BASE_URL + `todo/${_id}/`,
+        method: 'PUT',
+        headers: {Authorization: `token ${this.$store.getters.token}`},
+        data: {title: this.todos[_index].title}
+      }).then(() => {
+        this.$toast.success('Task name changed successfully')
+        this.todos[_index].editing = !this.todos[_index].editing
+      })
+    },
     /**
      * toggle visibility of input and buttons for a single todo
      * @argument {number} index - index of element to toggle
@@ -165,7 +181,17 @@ export default defineComponent({
      * @todo 1. Send the request to delete the task to the backend server.
      * @todo 2. Remove the task from the dom.
      */
-    deleteTask(_index, _id) {},
+    deleteTask(_index, _id) {
+      axios({
+        url: API_BASE_URL + `todo/${_id}/`,
+        method: 'DELETE',
+        headers: {Authorization: `token ${this.$store.getters.token}`},
+      }).then(() => {
+        this.$toast.success('Task deleted successfully')
+        this.todos = this.todos.filter(({id}) => id != _id)
+      })
+    },
   },
+  middleware: 'auth',
 })
 </script>
