@@ -56,23 +56,35 @@ export default defineComponent({
     }
   },
   methods: {
-    addTask() {
+    async addTask() {
       /**
        * @todo Complete this function.
        * @todo 1. Send the request to add the task to the backend server.
        * @todo 2. Add the task in the dom.
        * @hint use emit to make a event that parent can observe
        */
-      axios({
+
+      if (this.task.trim() === '') {
+        this.$toast.error('Task name can not be empty')
+        return
+      }
+
+      await axios({
         url: API_BASE_URL + 'todo/create/',
         method: 'POST',
         headers: {Authorization: `token ${this.$store.getters.token}`},
-        data: {title: this.task}
-      }).then(({title, id}) => {
-        this.$emit('newTask', title, id)
-        this.task = ''
-        this.$toast.success('Task created successfully')
+        data: {title: this.task.trim()}
       })
+
+      const newTodo = await axios({
+        url: API_BASE_URL + 'todo/',
+        method: 'GET',
+        headers: {Authorization: `token ${this.$store.getters.token}`},
+      }).then(obj => obj.data.pop())
+
+      this.$emit('newTask', newTodo)
+      this.task = ''
+      this.$toast.success('Task created successfully')
     },
   },
 })

@@ -1,9 +1,9 @@
 <template>
   <main class="max-w-lg mx-auto px-6">
-    <add-task @newTask="getTasks" />
-    <transition>
-      <span v-if="loading">Fetching Tasks....</span>
-      <ul v-else class="flex-col mt-9 mx-auto">
+    <add-task @newTask="addTask" />
+    <span v-if="loading">Fetching Tasks....</span>
+    <ul class="flex-col mt-9 mx-auto">
+      <transition-group name="list" @enter="entered" appear>
         <li
           v-for="(todo, index) in todos"
           :key="todo.id"
@@ -22,18 +22,18 @@
           <label :for="todo.id">
             <input
               v-model="todos[index].title"
+              v-show="todos[index].editing"
               :id="todo.id"
               type="text"
-              :class="[
-                {'hideme': !todos[index].editing}, 'appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring todo-edit-task-input'
+              class="[
+                'appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring todo-edit-task-input'
               ]"
               :name="todo.title"
               placeholder="Edit The Task"
             />
           </label>
-          <div class="">
+          <div :class="{'hideme': !todos[index].editing}">
             <button
-              :class="{'hideme': !todos[index].editing}"
               class="
                 bg-transparent
                 hover:bg-gray-500
@@ -55,11 +55,10 @@
           <div :class="[{'hideme': todos[index].editing}, 'todo-task text-gray-600']">
             {{ todo.title }}
           </div>
-          <span class="">
+          <span :class="{'hideme': todos[index].editing}" >
             <button
               style="margin-right: 5px"
               type="button"
-              :class="{'hideme': todos[index].editing}"
               class="
                 bg-transparent
                 hover:bg-yellow-500 hover:text-white
@@ -80,7 +79,6 @@
             </button>
             <button
               type="button"
-              :class="{'hideme': todos[index].editing}"
               class="
                 bg-transparent
                 hover:bg-red-500 hover:text-white
@@ -101,8 +99,8 @@
             </button>
           </span>
         </li>
-      </ul>
-    </transition>
+      </transition-group>
+    </ul>
   </main>
 </template>
 
@@ -117,9 +115,7 @@ export default defineComponent({
   data() {
     return {
       hello: 'hello world!',
-      todos: {
-        type: Array,
-      },
+      todos: [],
       loading: false,
     }
   },
@@ -127,6 +123,9 @@ export default defineComponent({
     this.getTasks()
   },
   methods: {
+    addTask(task) {
+      this.todos.push(task);
+    },
     async getTasks() {
       /***
        * @todo Fetch the tasks created by the user and display them.
@@ -191,7 +190,28 @@ export default defineComponent({
         this.todos = this.todos.filter(({id}) => id != _id)
       })
     },
+    entered() {
+      console.log('entered')
+    }
   },
   middleware: 'auth',
 })
 </script>
+
+<style>
+  .list-enter-to,
+  .list-leave-from {
+    opacity: 1 !important;
+    transform: translateX(0);
+  }
+  .list-enter-active,
+  .list-leave-active {
+    /* opacity: 1; */
+    transition: all 2s ease;
+  }
+  .list-enter-from,
+  .list-leave-to {
+    opacity: 0 !important;
+    transform: translateX(30px);
+  }
+</style>
