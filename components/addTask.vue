@@ -26,7 +26,6 @@
       type="button"
       class="
         todo-add-task
-        bg-transparent
         hover:bg-green-500
         text-green-700 text-sm
         hover:text-white
@@ -36,9 +35,17 @@
         hover:border-transparent
         rounded
       "
+      :class="isAddingTask ? 'bg-green-500' :'bg-transparent'"
       @click="addTask"
     >
-      Add Task
+      <span v-show="!isAddingTask">Add Task</span>
+      <img
+        src="https://cdn-icons.flaticon.com/png/512/1357/premium/1357612.png?token=exp=1656848148~hmac=9ef72006d0c0302b371e5e78aed23551"
+        width="18px"
+        height="20px"
+        alt="Adding..."
+        v-show="isAddingTask"
+      />
     </button>
   </aside>
 </template>
@@ -52,17 +59,15 @@ export default defineComponent({
   emits: ['newTask'],
   data() {
     return {
-      task: ''
+      task: '',
+      isAddingTask: false
     }
   },
   methods: {
     async addTask() {
-      /**
-       * @todo Complete this function.
-       * @todo 1. Send the request to add the task to the backend server.
-       * @todo 2. Add the task in the dom.
-       * @hint use emit to make a event that parent can observe
-       */
+
+      if (this.isAddingTask) return
+      this.isAddingTask = true
 
       if (this.task.trim() === '') {
         this.$toast.error('Task name can not be empty')
@@ -81,10 +86,11 @@ export default defineComponent({
         method: 'GET',
         headers: {Authorization: `token ${this.$store.getters.token}`},
       }).then(obj => obj.data.pop())
-
+      newTodo.editing = false
       this.$emit('newTask', newTodo)
       this.task = ''
       this.$toast.success('Task created successfully')
+      this.isAddingTask = false
     },
   },
 })

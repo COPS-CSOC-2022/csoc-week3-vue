@@ -1,11 +1,13 @@
 <template>
   <main class="max-w-lg mx-auto px-6">
+    <search @query="search"></search>
     <add-task @newTask="addTask" />
-    <span v-if="loading">Fetching Tasks....</span>
+    <span v-if="loading" class="no-task">Fetching Tasks....</span>
+    <span v-if="!loading && this.filteredTodos.length === 0" class="no-task">No Tasks To Show</span>
     <ul class="flex-col mt-9 mx-auto">
-      <transition-group name="list" @enter="entered" appear>
+      <transition-group name="list" appear>
         <li
-          v-for="(todo, index) in todos"
+          v-for="(todo, index) in filteredTodos"
           :key="todo.id"
           class="
             border
@@ -21,8 +23,8 @@
         >
           <label :for="todo.id">
             <input
-              v-model="todos[index].title"
-              v-show="todos[index].editing"
+              v-model="filteredTodos[index].title"
+              v-show="filteredTodos[index].editing"
               :id="todo.id"
               type="text"
               class="[
@@ -32,7 +34,7 @@
               placeholder="Edit The Task"
             />
           </label>
-          <div :class="{'hideme': !todos[index].editing}">
+          <div :class="{'hideme': !filteredTodos[index].editing}">
             <button
               class="
                 bg-transparent
@@ -52,10 +54,10 @@
               Done
             </button>
           </div>
-          <div :class="[{'hideme': todos[index].editing}, 'todo-task text-gray-600']">
+          <div :class="[{'hideme': filteredTodos[index].editing}, 'todo-task text-gray-600']">
             {{ todo.title }}
           </div>
-          <span :class="{'hideme': todos[index].editing}" >
+          <span :class="{'hideme': filteredTodos[index].editing}" >
             <button
               style="margin-right: 5px"
               type="button"
@@ -68,7 +70,7 @@
                 px-2
                 py-2
               "
-              @click="editTask(index)"
+              @click="editTask(index, todo.id)"
             >
               <img
                 src="https://res.cloudinary.com/nishantwrp/image/upload/v1587486663/CSOC/edit.png"
@@ -108,15 +110,18 @@
 import { defineComponent } from '@nuxtjs/composition-api'
 import addTask from '~/components/addTask.vue'
 import axios from 'axios'
+import Search from '~/components/search.vue';
 const API_BASE_URL = 'https://todo-app-csoc.herokuapp.com/';
+let query = ''
 
 export default defineComponent({
-  components: { addTask },
+  components: { addTask, Search },
   data() {
     return {
       hello: 'hello world!',
       todos: [],
       loading: false,
+      filteredTodos: [],
     }
   },
   mounted() {
@@ -125,14 +130,16 @@ export default defineComponent({
   methods: {
     addTask(task) {
       this.todos.push(task);
+      if (task.title.toLowerCase().indexOf(query) !== -1)
+        this.filteredTodos.push(task)
     },
+
+    search(searchTerm) {
+      query = searchTerm
+      this.filteredTodos = this.todos.filter(t => t.title.toLowerCase().indexOf(query) !== -1)
+    },
+
     async getTasks() {
-      /***
-       * @todo Fetch the tasks created by the user and display them.
-       * @todo also the function to display a single new task added
-       * @hints use store and set loading true
-       * @caution you have to assign new value to todos for it to update
-       */
       this.loading = true
       let todos = await axios({
         url: API_BASE_URL + 'todo/',
@@ -140,46 +147,32 @@ export default defineComponent({
         headers: {Authorization: `token ${this.$store.getters.token}`},
       }).then(obj => obj.data)
       todos.forEach(t => t.editing = false)
-      this.todos = todos
+      this.todos = Array.from(todos)
+      this.filteredTodos = Array.from(todos)
       this.loading = false
     },
-    /**
-     * Function to update a single todo
-     * @argument {number} _index - index of element to update in todos array
-     * @argument {number} _id - id of todo obtained from API
-     * @todo Complete this function.
-     * @todo 1. Send the request to update the task to the backend server.
-     * @todo 2. Update the task in the dom.
-     */
+
     updateTask(_index, _id) {
-      this.todos[_index].title = this.todos[_index].title.trim()
+      this.filteredTodos[_index].title = this.filteredTodos[_index].title.trim()
       axios({
         url: API_BASE_URL + `todo/${_id}/`,
         method: 'PUT',
         headers: {Authorization: `token ${this.$store.getters.token}`},
-        data: {title: this.todos[_index].title}
+        data: {title: this.filteredTodos[_index].title}
       }).then(() => {
         this.$toast.success('Task name changed successfully')
-        this.todos[_index].editing = !this.todos[_index].editing
+        const ind = (arr) => arr.findIndex(elem => elem.id === _id)
+        this.todos[ind(this.todos)].editing = false
+        this.filteredTodos[ind(this.filteredTodos)].editing = false
       })
     },
-    /**
-     * toggle visibility of input and buttons for a single todo
-     * @argument {number} index - index of element to toggle
-     * @todo add in bindings in dom so that 'hideme' class is dynamic or use conditional rendering
-     * @hint read about class bindings in vue
-     */
-    editTask(index) {
-      this.todos[index].editing = !this.todos[index].editing
+
+    editTask(index, id) {
+      const ind = (arr) => arr.findIndex(elem => elem.id === id)
+      this.todos[ind(this.todos)].editing = true
+      this.filteredTodos[ind(this.filteredTodos)].editing = true
     },
-    /**
-     * Function to delete a single todo
-     * @argument {number} _index - index of element to update in todos array
-     * @argument {number} _id - id of todo obtained from API
-     * @todo Complete this function.
-     * @todo 1. Send the request to delete the task to the backend server.
-     * @todo 2. Remove the task from the dom.
-     */
+    
     deleteTask(_index, _id) {
       axios({
         url: API_BASE_URL + `todo/${_id}/`,
@@ -188,30 +181,43 @@ export default defineComponent({
       }).then(() => {
         this.$toast.success('Task deleted successfully')
         this.todos = this.todos.filter(({id}) => id != _id)
+        this.filteredTodos = this.filteredTodos.filter(({id}) => id != _id)
       })
     },
-    entered() {
-      console.log('entered')
-    }
   },
   middleware: 'auth',
 })
 </script>
 
 <style>
-  .list-enter-to,
-  .list-leave-from {
-    opacity: 1 !important;
-    transform: translateX(0);
+  .no-task {
+    position: absolute;
+    left:50%;
+    transform: translateX(-50%);
+    margin-top: 30px
   }
   .list-enter-active,
-  .list-leave-active {
-    /* opacity: 1; */
-    transition: all 2s ease;
+  .list-leave-active,
+  .list-move {
+    transition: 500ms cubic-bezier(0.59, 0.12, 0.34, 0.95);
+    /* transition-property: opacity, transform; */
+    transition-property: all;
   }
-  .list-enter-from,
+
+  .list-enter {
+    opacity: 0;
+    transform: translateX(50px) scaleY(0.5);
+  }
+
+  .list-leave-active {
+    /* margin: -10%; */
+    width: min(100vw - 48px, 464px);
+    position: absolute;
+  }
+
   .list-leave-to {
-    opacity: 0 !important;
-    transform: translateX(30px);
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: center top;
   }
 </style>
