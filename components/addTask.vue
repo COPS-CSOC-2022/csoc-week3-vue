@@ -4,6 +4,7 @@
       <input
         type="text"
         name="add task"
+        v-model="task"
         class="
           todo-add-task-input
           px-4
@@ -25,7 +26,6 @@
       type="button"
       class="
         todo-add-task
-        bg-transparent
         hover:bg-green-500
         text-green-700 text-sm
         hover:text-white
@@ -35,26 +35,62 @@
         hover:border-transparent
         rounded
       "
+      :class="isAddingTask ? 'bg-green-500' :'bg-transparent'"
       @click="addTask"
     >
-      Add Task
+      <span v-show="!isAddingTask">Add Task</span>
+      <img
+        src="../static/loading.png"
+        width="18px"
+        height="20px"
+        alt="Adding..."
+        v-show="isAddingTask"
+      />
     </button>
   </aside>
 </template>
 
 <script>
 import { defineComponent } from '@nuxtjs/composition-api'
+import axios from 'axios'
+const API_BASE_URL = 'https://todo-app-csoc.herokuapp.com/';
 
 export default defineComponent({
   emits: ['newTask'],
+  data() {
+    return {
+      task: '',
+      isAddingTask: false
+    }
+  },
   methods: {
-    addTask() {
-      /**
-       * @todo Complete this function.
-       * @todo 1. Send the request to add the task to the backend server.
-       * @todo 2. Add the task in the dom.
-       * @hint use emit to make a event that parent can observe
-       */
+    async addTask() {
+
+      if (this.isAddingTask) return
+      this.isAddingTask = true
+
+      if (this.task.trim() === '') {
+        this.$toast.error('Task name can not be empty')
+        return
+      }
+
+      await axios({
+        url: API_BASE_URL + 'todo/create/',
+        method: 'POST',
+        headers: {Authorization: `token ${this.$store.getters.token}`},
+        data: {title: this.task.trim()}
+      })
+
+      const newTodo = await axios({
+        url: API_BASE_URL + 'todo/',
+        method: 'GET',
+        headers: {Authorization: `token ${this.$store.getters.token}`},
+      }).then(obj => obj.data.pop())
+      newTodo.editing = false
+      this.$emit('newTask', newTodo)
+      this.task = ''
+      this.$toast.success('Task created successfully')
+      this.isAddingTask = false
     },
   },
 })

@@ -52,8 +52,9 @@ export default defineComponent({
     },
   },
   methods: {
-    logout() {
+    async logout() {
       this.$store.commit('setToken', null)
+      await new Promise(r => setTimeout(r, 1000));
       this.$router.replace('/login')
     },
   },
