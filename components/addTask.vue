@@ -40,7 +40,7 @@
     >
       <span v-show="!isAddingTask">Add Task</span>
       <img
-        src="https://cdn-icons.flaticon.com/png/512/1357/premium/1357612.png?token=exp=1656848148~hmac=9ef72006d0c0302b371e5e78aed23551"
+        src="../static/loading.png"
         width="18px"
         height="20px"
         alt="Adding..."
