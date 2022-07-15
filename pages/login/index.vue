@@ -16,7 +16,7 @@
       <label for="password">
         <input
           id="inputPassword"
-          v-model="inputPassword"
+          v-model.trim="inputPassword"
           type="password"
           class="block border border-grey-light w-full p-3 rounded mb-4"
           name="inputPassword"
