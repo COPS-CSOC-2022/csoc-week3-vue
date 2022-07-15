@@ -5,6 +5,7 @@
       <label for="inputUsername">
         <input
           id="inputUsername"
+          v-model.trim="inputUsername"
           type="text"
           class="block border border-grey-light w-full p-3 rounded mb-4"
           name="inputUsername"
@@ -15,6 +16,7 @@
       <label for="password">
         <input
           id="inputPassword"
+          v-model.trim="inputPassword"
           type="password"
           class="block border border-grey-light w-full p-3 rounded mb-4"
           name="inputPassword"
@@ -47,23 +49,48 @@
 
 <script>
 import { useContext } from '@nuxtjs/composition-api'
-import { defineComponent } from '@vue/composition-api'
+import { defineComponent, reactive, toRefs } from '@vue/composition-api'
 
 export default defineComponent({
+  middleware: 'auth',
   setup() {
-    const { $toast } = useContext()
+
+    const state = reactive({
+      inputUsername: '',
+      inputPassword: '',
+    })
+
+    const { redirect, $axios, store, $toast } = useContext()
+    
+    const validateFields = () => {
+      if( state.inputUsername === '' || state.inputPassword === '' ){
+        $toast.error("Username and password both can't be blank.");
+        return false;
+      }
+      return true;
+    }
+
     function login() {
-      $toast.info('Complete Me!')
-      /***
-       * @todo Complete this function.
-       * @todo 1. Write code for form validation.
-       * @todo 2. Fetch the auth token from backend and login the user.
-       * @todo 3. Commit token to Vuex Store
-       * @hints checkout register/index.vue
-       */
+      
+      if (!validateFields()) return;
+      
+      const dataForAPIRequest = {
+        username: state.inputUsername,
+        password: state.inputPassword
+      }
+      $toast.info('Please wait...')
+      $axios
+        .$post('auth/login/', dataForAPIRequest)
+        .then( ({ token }) => {
+          store.commit('setToken', token)
+          redirect('/')
+          $toast.success('Login Authenticated.')
+        })
+        .catch(err => $toast.error('Invalid Credentials.'))
     }
 
     return {
+      ...toRefs(state),
       login,
     }
   },

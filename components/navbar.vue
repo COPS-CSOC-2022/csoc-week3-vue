@@ -55,6 +55,7 @@ export default defineComponent({
     logout() {
       this.$store.commit('setToken', null)
       this.$router.replace('/login')
+      this.$toast.info('Logged out successfully!')
     },
   },
 })

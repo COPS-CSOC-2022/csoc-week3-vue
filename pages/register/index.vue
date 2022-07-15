@@ -88,6 +88,7 @@ import {
 } from '@nuxtjs/composition-api'
 
 export default defineComponent({
+  middleware: 'auth',
   setup() {
     const state = reactive({
       firstName: '',
@@ -133,6 +134,8 @@ export default defineComponent({
         .$post('auth/register/', data)
         .then(({ token }) => {
           store.commit('setToken', token)
+          $toast.success("Registeration Successful!")
+          $toast.info("You have been logged in!")
           redirect('/')
         })
         .catch(() => {

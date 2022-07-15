@@ -4,6 +4,7 @@
       <input
         type="text"
         name="add task"
+        v-model.trim="newTodo"
         class="
           todo-add-task-input
           px-4
@@ -15,10 +16,11 @@
           text-sm
           border border-blueGray-300
           outline-none
-          focus:outline-none focus:ring
+          focus:outline-none
+          focus:ring
           w-full
         "
-        placeholder="Enter Task"
+        placeholder="Enter your task here"
       />
     </label>
     <button
@@ -46,15 +48,42 @@
 import { defineComponent } from '@nuxtjs/composition-api'
 
 export default defineComponent({
-  emits: ['newTask'],
+  data() {
+    return {
+      newTodo: '',
+    }
+  },
   methods: {
-    addTask() {
-      /**
-       * @todo Complete this function.
-       * @todo 1. Send the request to add the task to the backend server.
-       * @todo 2. Add the task in the dom.
-       * @hint use emit to make a event that parent can observe
-       */
+    async addTask() {
+      let newTodo = this.newTodo
+      if (newTodo == '') {
+        this.$toast.error('New Todo cannot be empty.')
+        return
+      }
+
+      this.$toast.info('Adding Todo...')
+      this.newTodo = ''
+
+      const headerForAuthorization = {
+        Authorization: 'Token ' + this.$store.getters.token,
+      }
+      const dataForAPIRequest = {
+        title: newTodo,
+      }
+
+      this.$axios({
+        headers: headerForAuthorization,
+        url: 'todo/create/',
+        method: 'post',
+        data: dataForAPIRequest,
+      })
+        .then(() => {
+          this.$toast.success('Todo added successfully!')
+          this.$emit('newTask')
+        })
+        .catch(() =>
+          this.$toast.error('Addition failed. Please try again later.')
+        )
     },
   },
 })
