@@ -3,7 +3,7 @@
     <label for="add task" class="flex-1">
       <input
         type="text"
-        v-model="taskadded"
+        v-model="taskAdded"
         name="add task"
         class="
           todo-add-task-input
@@ -49,27 +49,27 @@ import { defineComponent } from '@nuxtjs/composition-api'
 export default defineComponent({
   data() {
     return{
-      taskadded: ""
+      taskAdded: ""
     }
   },
   emits: ['newTask'],
   methods: {
     addTask() {
-      if (this.taskadded == "" ){
+      if (this.taskAdded == "" ){
         this.$toast.error("Empty tasks can't be added")
       }
-      else if (this.taskadded.length > 255 ){
+      else if (this.taskAdded.length > 255 ){
         this.$toast.error("Maximum length of task should be 255")
       }
       else{
         const task = {
-          title: this.taskadded
+          title: this.taskAdded
         }
         this.$axios.post('todo/create/', task , {headers: { Authorization: 'Token ' + this.$store.getters.token}})
         this.$toast.success("Task added successfully.")
         this.$emit('newTask')
       }
-      this.taskadded = ""
+      this.taskAdded = ""
     },
   },
 })

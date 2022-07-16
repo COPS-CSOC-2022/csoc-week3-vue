@@ -66,8 +66,12 @@ export default defineComponent({
         state.username === '' ||
         state.password === ''
       ) {
-        $toast.error('Please enter correct login credentials.')
-        console.log("shit")
+        if (state.username === '' ){
+          $toast.error('Empty username is not valid.')
+        }
+        else if (state.password === '' ){
+          $toast.error('Empty passwords is not valid.')
+        }
         return false
       }
       return true

@@ -3,7 +3,7 @@
     <add-task @newTask="getTasks" />
     <transition name="slide-fade">
       <span v-if="loading">Fetching Tasks....</span>
-      <ul v-else class="flex-col mt-9 mx-auto">
+      <TransitionGroup name="list" tag="ul" v-else class="flex-col mt-9 mx-auto">
         <li
           v-for="(todo, index) in todos"
           :key="todo.id"
@@ -98,7 +98,7 @@
             </button>
           </span>
         </li>
-      </ul>
+      </TransitionGroup>
     </transition>
   </main>
 </template>
@@ -169,7 +169,6 @@ export default defineComponent({
           })
         this.todos[_index].title = dataforAPI.title
       }
-      this.altTitle = ""
       this.hideitem = null
     },
 
@@ -177,6 +176,7 @@ export default defineComponent({
       this.todos[index].editing = !this.todos[index].editing
       console.log(this.todos[index].editing)
       this.hideitem = this.todos[index].id
+      this.altTitle = this.todos[index].title
     },
 
     deleteTask(_index, _id) {
