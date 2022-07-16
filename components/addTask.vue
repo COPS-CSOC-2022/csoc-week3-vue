@@ -19,6 +19,7 @@
           w-full
         "
         placeholder="Enter Task"
+        v-model='newtask'
       />
     </label>
     <button
@@ -44,17 +45,43 @@
 
 <script>
 import { defineComponent } from '@nuxtjs/composition-api'
+import axios from 'axios'
+
+const BASE_URL = 'https://todo-app-csoc.herokuapp.com/';
 
 export default defineComponent({
   emits: ['newTask'],
+  data(){
+    return {
+      newtask: ''
+    }
+  },
   methods: {
-    addTask() {
+    async addTask() {
       /**
        * @todo Complete this function.
        * @todo 1. Send the request to add the task to the backend server.
        * @todo 2. Add the task in the dom.
        * @hint use emit to make a event that parent can observe
        */
+      let task = this.newtask.trim()
+      console.log(task)
+      if (task == ''){
+        this.$toast.error('cannot add empty task')
+        return
+      }
+      await axios({
+        method: 'post',
+        url: BASE_URL + 'todo/create/',
+        data: {
+          title: task
+        },
+        headers:{
+          Authorization: 'token '+ this.$store.getters.token
+        }
+      })
+      this.$emit('newTask', '')
+      this.newtask = ''
     },
   },
 })
