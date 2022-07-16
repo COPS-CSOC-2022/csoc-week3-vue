@@ -1,9 +1,9 @@
 <template>
   <main class="max-w-lg mx-auto px-6">
     <add-task @newTask="getTasks" />
-    <transition>
+    <transition name="slide-fade">
       <span v-if="loading">Fetching Tasks....</span>
-      <ul v-else class="flex-col mt-9 mx-auto">
+      <TransitionGroup name="list" tag="ul" v-else class="flex-col mt-9 mx-auto">
         <li
           v-for="(todo, index) in todos"
           :key="todo.id"
@@ -22,18 +22,18 @@
           <label :for="todo.id">
             <input
               :id="todo.id"
+              v-model="altTitle"
               type="text"
               :class="[
-                'hideme appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring todo-edit-task-input',
+                { hideme: !(hideitem === todo.id) }, 'appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring todo-edit-task-input',
               ]"
               :name="todo.title"
               placeholder="Edit The Task"
             />
           </label>
-          <div class="">
+          <div :class="[{ hideme: !(hideitem === todo.id) }]">
             <button
               class="
-                hideme
                 bg-transparent
                 hover:bg-gray-500
                 text-gray-700 text-sm
@@ -51,10 +51,10 @@
               Done
             </button>
           </div>
-          <div :class="['todo-task text-gray-600']">
+          <div :class="[{ hideme: hideitem === todo.id }, 'todo-task text-gray-600']">
             {{ todo.title }}
           </div>
-          <span class="">
+          <span :class="[{ hideme: hideitem === todo.id }]">
             <button
               style="margin-right: 5px"
               type="button"
@@ -98,32 +98,24 @@
             </button>
           </span>
         </li>
-      </ul>
+      </TransitionGroup>
     </transition>
   </main>
 </template>
 
 <script lang>
-import { defineComponent } from '@nuxtjs/composition-api'
+import { defineComponent, ref } from '@nuxtjs/composition-api'
 import addTask from '~/components/addTask.vue'
 
 export default defineComponent({
+  middleware: 'auth',
   components: { addTask },
   data() {
     return {
+      hideitem: null,
+      altTitle: "",
       hello: 'hello world!',
-      todos: [
-        {
-          title: 'Henlo',
-          id: 1,
-          editing: false,
-        },
-        {
-          title: 'Frens',
-          id: 2,
-          editing: false,
-        },
-      ],
+      todos: [],
       loading: false,
     }
   },
@@ -132,40 +124,74 @@ export default defineComponent({
   },
   methods: {
     async getTasks() {
-      /***
-       * @todo Fetch the tasks created by the user and display them.
-       * @todo also the function to display a single new task added
-       * @hints use store and set loading true
-       * @caution you have to assign new value to todos for it to update
-       */
+
+      this.loading = true
+      try {
+        const res = await this.$axios.get('todo/', {headers: { Authorization: 'Token ' + this.$store.getters.token}})
+        this.todos = res.data
+        console.log(res)
+        this.todos.forEach((index) => {
+          index.editing = false
+        })
+        this.loading = false
+      } catch (err) {
+        console.log(err)
+        this.loading = false
+      }
     },
-    /**
-     * Function to update a single todo
-     * @argument {number} _index - index of element to update in todos array
-     * @argument {number} _id - id of todo obtained from API
-     * @todo Complete this function.
-     * @todo 1. Send the request to update the task to the backend server.
-     * @todo 2. Update the task in the dom.
-     */
-    updateTask(_index, _id) {},
-    /**
-     * toggle visibility of input and buttons for a single todo
-     * @argument {number} index - index of element to toggle
-     * @todo add in bindings in dom so that 'hideme' class is dynamic or use conditional rendering
-     * @hint read about class bindings in vue
-     */
+
+    updateTask(_index, _id) {
+
+      this.todos[_index].editing = !this.todos[_index].editing
+      //Checking if the updated value already exists within the todo list
+      var check = false
+      this.todos.forEach((todo) => {
+          if( todo.title === this.altTitle ){
+            check = true
+            return
+          }
+      })
+
+      if( this.altTitle === "" ){
+        this.$toast.error("Todo not edited.")
+      }
+      else if (check){
+        this.$toast.error("The entered todo alreay exists in the list.")
+      }
+      else{
+        const dataforAPI ={
+          id: _id,
+          title: this.altTitle
+        }
+        this.$axios.patch('todo/'+ _id +'/', dataforAPI , {headers: { Authorization: 'Token ' + this.$store.getters.token}})
+          .then(() => {
+            this.$toast.success("Todo edited successfully")
+          })
+        this.todos[_index].title = dataforAPI.title
+      }
+      this.hideitem = null
+    },
+
     editTask(index) {
       this.todos[index].editing = !this.todos[index].editing
+      console.log(this.todos[index].editing)
+      this.hideitem = this.todos[index].id
+      this.altTitle = this.todos[index].title
     },
-    /**
-     * Function to delete a single todo
-     * @argument {number} _index - index of element to update in todos array
-     * @argument {number} _id - id of todo obtained from API
-     * @todo Complete this function.
-     * @todo 1. Send the request to delete the task to the backend server.
-     * @todo 2. Remove the task from the dom.
-     */
-    deleteTask(_index, _id) {},
+
+    deleteTask(_index, _id) {
+      const dataforAPI = {
+        id: _id
+      }
+      console.log(dataforAPI.id)
+      this.$axios.delete('todo/'+ _id +'/', {headers: { Authorization: 'Token ' + this.$store.getters.token}})
+        .then((response) =>{
+          this.todos = this.todos.filter((todo) => todo.id !== _id)
+        }).catch((err) => {
+          console.log(err)
+        })
+      this.$toast.info("Todo deleted successfully.")
+    },
   },
 })
 </script>

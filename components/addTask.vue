@@ -3,6 +3,7 @@
     <label for="add task" class="flex-1">
       <input
         type="text"
+        v-model="taskAdded"
         name="add task"
         class="
           todo-add-task-input
@@ -46,15 +47,29 @@
 import { defineComponent } from '@nuxtjs/composition-api'
 
 export default defineComponent({
+  data() {
+    return{
+      taskAdded: ""
+    }
+  },
   emits: ['newTask'],
   methods: {
     addTask() {
-      /**
-       * @todo Complete this function.
-       * @todo 1. Send the request to add the task to the backend server.
-       * @todo 2. Add the task in the dom.
-       * @hint use emit to make a event that parent can observe
-       */
+      if (this.taskAdded == "" ){
+        this.$toast.error("Empty tasks can't be added")
+      }
+      else if (this.taskAdded.length > 255 ){
+        this.$toast.error("Maximum length of task should be 255")
+      }
+      else{
+        const task = {
+          title: this.taskAdded
+        }
+        this.$axios.post('todo/create/', task , {headers: { Authorization: 'Token ' + this.$store.getters.token}})
+        this.$toast.success("Task added successfully.")
+        this.$emit('newTask')
+      }
+      this.taskAdded = ""
     },
   },
 })
