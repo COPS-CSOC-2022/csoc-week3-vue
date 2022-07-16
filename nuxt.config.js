@@ -71,6 +71,7 @@ export default {
   generate: {
     // choose to suit your project
     interval: 2000,
+    dir: 'public',
   },
   ssr: false,
 
@@ -93,6 +94,7 @@ export default {
     position: 'bottom-right',
     duration: 2000,
   },
+   
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
