@@ -3,7 +3,7 @@
     <label for="add task" class="flex-1">
       <input
         type="text"
-        v-model="newTask"
+        v-model.trim="newTask"
         name="add task"
         class="
           todo-add-task-input
