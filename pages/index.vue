@@ -189,7 +189,7 @@ export default defineComponent({
       })
         .then(() => {
           this.$toast.success('Task deleted successfully')
-          this.todos = this.todos.filter((todo) => todo.id !== _id)
+          this.todos.splice(_index, 1)
         })
         .catch(() => {
           this.$toast.error('Error Occured.Please try again later')
