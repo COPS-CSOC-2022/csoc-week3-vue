@@ -147,5 +147,6 @@ export default defineComponent({
       register,
     }
   },
+  middleware: 'auth',
 })
 </script>

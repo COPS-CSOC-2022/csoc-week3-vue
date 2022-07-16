@@ -1,5 +1,6 @@
 <template>
   <main class="max-w-lg mx-auto px-6">
+    <searchBar @searchQuery='search_query'/>
     <add-task @newTask="getTasks" />
     <transition>
       <span v-if="loading">Fetching Tasks....</span>
@@ -22,18 +23,22 @@
           <label :for="todo.id">
             <input
               :id="todo.id"
+              v-model="newTitle"
               type="text"
-              :class="[
-                'hideme appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring todo-edit-task-input',
-              ]"
+              :class="{ hideme: !todo.editing }"
+              class="
+                'appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring todo-edit-task-input',
+              "
               :name="todo.title"
+              
               placeholder="Edit The Task"
             />
           </label>
           <div class="">
             <button
+              :class="{ hideme: !todo.editing }"
               class="
-                hideme
+                
                 bg-transparent
                 hover:bg-gray-500
                 text-gray-700 text-sm
@@ -51,7 +56,7 @@
               Done
             </button>
           </div>
-          <div :class="['todo-task text-gray-600']">
+          <div class="todo-task text-gray-600" :class="{ hideme: todo.editing }">
             {{ todo.title }}
           </div>
           <span class="">
@@ -67,6 +72,7 @@
                 px-2
                 py-2
               "
+              :class="{ hideme: todo.editing }"
               @click="editTask(index)"
             >
               <img
@@ -78,6 +84,7 @@
             </button>
             <button
               type="button"
+              :class="{ hideme: todo.editing }"
               class="
                 bg-transparent
                 hover:bg-red-500 hover:text-white
@@ -106,24 +113,22 @@
 <script lang>
 import { defineComponent } from '@nuxtjs/composition-api'
 import addTask from '~/components/addTask.vue'
+import search from '~/components/searchBar.vue'
+import axios from 'axios'
+
+const BASE_URL = 'https://todo-app-csoc.herokuapp.com/';
+
+let tmp_arr = []
 
 export default defineComponent({
-  components: { addTask },
+  components: { 
+    addTask
+  },
   data() {
     return {
       hello: 'hello world!',
-      todos: [
-        {
-          title: 'Henlo',
-          id: 1,
-          editing: false,
-        },
-        {
-          title: 'Frens',
-          id: 2,
-          editing: false,
-        },
-      ],
+      todos: [],
+      newTitle: '',
       loading: false,
     }
   },
@@ -131,6 +136,16 @@ export default defineComponent({
     this.getTasks()
   },
   methods: {
+    search_query(searchText){
+      if(searchText === false){
+        this.todos = tmp_arr
+        return
+      }
+      this.todos = tmp_arr.filter( todo =>
+        todo.title.toLowerCase().includes(searchText)
+      )
+      
+    },
     async getTasks() {
       /***
        * @todo Fetch the tasks created by the user and display them.
@@ -138,6 +153,21 @@ export default defineComponent({
        * @hints use store and set loading true
        * @caution you have to assign new value to todos for it to update
        */
+      this.loading = true
+      let tasks = await axios({
+        method: 'get',
+        url: BASE_URL + 'todo/',
+        headers: {
+          Authorization: 'token ' + this.$store.getters.token
+        }
+      }).then(res => res.data)
+      tasks.forEach(element => {
+        element.editing = false
+      })
+      //console.log(tasks)
+      this.todos = tasks
+      this.loading = false
+      tmp_arr = this.todos
     },
     /**
      * Function to update a single todo
@@ -147,7 +177,28 @@ export default defineComponent({
      * @todo 1. Send the request to update the task to the backend server.
      * @todo 2. Update the task in the dom.
      */
-    updateTask(_index, _id) {},
+    async updateTask(_index, _id) {
+      let _title = this.newTitle.trim()
+      if (_title == ''){
+        this.$toast.show("todo unchanged!")
+        
+      }else{
+        await axios({
+          method: 'put',
+          url: BASE_URL + `todo/${_id}/`,
+          headers: {
+            Authorization: 'token ' + this.$store.getters.token
+          },
+          data:{
+            title: _title
+          }
+        })
+      }
+      this.todos[_index].title = _title
+      this.newTitle = ''
+      this.editTask(_index)
+      tmp_arr = this.todos
+    },
     /**
      * toggle visibility of input and buttons for a single todo
      * @argument {number} index - index of element to toggle
@@ -165,7 +216,23 @@ export default defineComponent({
      * @todo 1. Send the request to delete the task to the backend server.
      * @todo 2. Remove the task from the dom.
      */
-    deleteTask(_index, _id) {},
+    async deleteTask(_index, _id) {
+      //let arr = this.todos.splice(_index+1, this.todos.length - _index)
+      //let arr = this.todos
+      this.todos = this.todos.filter(({id}) => id!=_id)
+      
+      
+      console.log(this.todos)
+      await axios({
+        method: 'delete',
+        url: BASE_URL + 'todo/' +  _id,
+        headers: {
+          Authorization: 'token ' + this.$store.getters.token
+        }
+      })
+      tmp_arr = this.todos
+    },
   },
+  middleware: 'auth'
 })
 </script>
