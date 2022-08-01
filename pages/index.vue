@@ -172,7 +172,7 @@ export default defineComponent({
       })
         .then(() => {
           this.$toast.success('Todo deleted successfully!')
-          this.$router.go()
+          this.todos = this.todos.filter(({id}) =>id != _id)
         })
         .catch(() =>
           this.$toast.error("Some error occured!"),

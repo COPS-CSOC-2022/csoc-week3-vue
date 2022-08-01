@@ -45,7 +45,7 @@ export default defineComponent({
 
     const validateField = () => {
       if (state.username === '' || state.password === '') {
-        $toast.error('Please fill all the fields correctly.')
+        $toast.error('Usernma/Password can\'t be empty')
         return false
       }
       return true
