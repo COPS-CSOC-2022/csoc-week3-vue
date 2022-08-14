@@ -46,7 +46,7 @@
     "stylelint-config-standard": "^21.0.0"
   },
   "engines": {
-    "node": ">=14",
+    "node": ">=12",
     "pnpm": ">=3"
   }
 }
