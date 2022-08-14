@@ -1,10 +1,7 @@
 <template>
   <aside class="mx-auto flex justify-between mt-24 px-4">
     <label for="add task" class="flex-1">
-      <input
-        type="text"
-        name="add task"
-        class="
+      <input type="text" name="add task" class="
           todo-add-task-input
           px-4
           py-2
@@ -17,13 +14,9 @@
           outline-none
           focus:outline-none focus:ring
           w-full
-        "
-        placeholder="Enter Task"
-      />
+        " v-model.trim="newTask" placeholder="Enter Task" />
     </label>
-    <button
-      type="button"
-      class="
+    <button type="button" class="
         todo-add-task
         bg-transparent
         hover:bg-green-500
@@ -34,9 +27,7 @@
         border border-green-500
         hover:border-transparent
         rounded
-      "
-      @click="addTask"
-    >
+      " @click="addTask">
       Add Task
     </button>
   </aside>
@@ -55,6 +46,25 @@ export default defineComponent({
        * @todo 2. Add the task in the dom.
        * @hint use emit to make a event that parent can observe
        */
+      var newTask = this.newTask
+      if (newTask == '') {
+        return
+      }
+      this.$toast.info('Adding...')
+      const headers = {
+        Authorization: 'Token ' + this.$store.getters.token,
+      }
+      this.$axios({
+        headers: headers,
+        url: 'todo/create/',
+        method: 'post',
+        data: { title: newTask }
+      }).then(() => {
+        this.$toast.success('Todo added successfully!')
+        this.$router.go()
+      }).catch(() =>
+        this.$toast.error('Some error occurred!')
+      )
     },
   },
 })

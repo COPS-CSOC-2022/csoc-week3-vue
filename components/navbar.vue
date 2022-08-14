@@ -54,7 +54,7 @@ export default defineComponent({
   methods: {
     logout() {
       this.$store.commit('setToken', null)
-      this.$router.replace('/login')
+      this.$router.go()
     },
   },
 })

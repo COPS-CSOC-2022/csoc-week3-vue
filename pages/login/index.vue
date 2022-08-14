@@ -3,28 +3,16 @@
     <div class="bg-white px-6 py-8 rounded shadow-md text-black w-full">
       <h1 class="mb-8 text-3xl text-center">Login</h1>
       <label for="inputUsername">
-        <input
-          id="inputUsername"
-          type="text"
-          class="block border border-grey-light w-full p-3 rounded mb-4"
-          name="inputUsername"
-          placeholder="Username"
-        />
+        <input id="inputUsername" type="text" v-model.trim="username"
+          class="block border border-grey-light w-full p-3 rounded mb-4" name="inputUsername" placeholder="Username" />
       </label>
 
       <label for="password">
-        <input
-          id="inputPassword"
-          type="password"
-          class="block border border-grey-light w-full p-3 rounded mb-4"
-          name="inputPassword"
-          placeholder="Password"
-        />
+        <input id="inputPassword" type="password" v-model.trim="password"
+          class="block border border-grey-light w-full p-3 rounded mb-4" name="inputPassword" placeholder="Password" />
       </label>
 
-      <button
-        type="submit"
-        class="
+      <button type="submit" class="
           w-full
           text-center
           py-3
@@ -36,9 +24,7 @@
           hover:border-transparent
           focus:outline-none
           my-1
-        "
-        @click="login"
-      >
+        " @click="login">
         Login
       </button>
     </div>
@@ -46,26 +32,49 @@
 </template>
 
 <script>
-import { useContext } from '@nuxtjs/composition-api'
-import { defineComponent } from '@vue/composition-api'
+import { defineComponent, reactive, toRefs, useContext, } from '@nuxtjs/composition-api'
 
 export default defineComponent({
   setup() {
-    const { $toast } = useContext()
-    function login() {
-      $toast.info('Complete Me!')
-      /***
-       * @todo Complete this function.
-       * @todo 1. Write code for form validation.
-       * @todo 2. Fetch the auth token from backend and login the user.
-       * @todo 3. Commit token to Vuex Store
-       * @hints checkout register/index.vue
-       */
-    }
+    const { redirect, $axios, store, $toast } = useContext()
 
+    const state = reactive({
+      username: '',
+      password: '',
+    })
+
+    const validateField = () => {
+      if (state.username === '' || state.password === '') {
+        $toast.error('Usernma/Password can\'t be empty')
+        return false
+      }
+      return true
+    }
+    function login() {
+      if (!validateField()) return
+      const data = {
+        username: state.username,
+        password: state.password,
+      }
+      $toast.info('Please wait...')
+
+      $axios
+        .$post('auth/login/', data)
+        .then(({ token }) => {
+          store.commit('setToken', token)
+          redirect('/')
+        })
+        .catch(() => {
+          $toast.error(
+            'Some Error Occured!'
+          )
+        })
+    }
     return {
+      ...toRefs(state),
       login,
     }
   },
 })
 </script>
+
